@@ -23,6 +23,9 @@ pipeline {
                 sh '''
                     docker build -t ${fimg} mern/frontend
                     docker build -t ${bimg} mern/backend
+                    ##
+                    ## We can (should) push our images to ECR or Dockerhub, But this is a demo project we dont want to do that,
+                    ##
                     docker pull mongo:6
                     docker network inspect ${net_name} >/dev/null 2>&1 || docker network create ${net_name}
                 '''

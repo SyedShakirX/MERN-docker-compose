@@ -33,10 +33,15 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: "Remove Older Docker Network If Present & Create A New One"
+    - name: "Ensure Docker Network Exists"
       run: |
-        sudo docker network rm ${{env.mern_net}} || true
-        sudo docker network create ${{env.mern_net}}
+        if sudo docker network ls --format '{{.Name}}' | grep -wq "${{ env.mern_net }}"; then
+          echo "Network ${{ env.mern_net }} already exists. Removing..."
+          sudo docker network rm ${{ env.mern_net }}
+        fi
+        echo "Creating Docker network ${{ env.mern_net }}..."
+        sudo docker network create ${{ env.mern_net }}
+
       
     - name: "Remove Already Running Containers"
       run: |

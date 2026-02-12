@@ -16,6 +16,20 @@ jobs:
   CI_CD_for_MERN:
     runs-on: self-hosted
     steps:
+
+    - name: Install Docker if not present
+      run: |
+        if ! command -v docker &> /dev/null
+        then
+          echo "Docker not found. Installing..."
+          sudo apt update
+          sudo apt install -y docker.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
+        else
+          echo "Docker already installed"
+        fi
+
     - name: Checkout repo
       uses: actions/checkout@v4
 

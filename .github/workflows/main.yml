@@ -1,0 +1,71 @@
+name: 3 Tier Workspace CI CD MERN Stack
+
+on: workflow_dispatch
+env:
+  fimg: "frontend_image"
+  bimg: "backend_image"
+  fcont: "frontend_container"
+  bcont: "backend_container"
+  dbname: "mongodb"
+  fport: 5173
+  bport: 5050
+  dbport: 27017
+  mern_net: "mern-docker-network"
+
+jobs:
+  CI_CD_for_MERN:
+    runs-on: self-hosted
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: "Remove Older Docker Network If Present & Create A New One"
+      run: |
+        docker network rm ${{env.mern_net}} || true
+        docker network create ${{env.mern_net}}
+      
+    - name: "Remove Already Running Containers"
+      run: |
+        docker stop ${{env.fcont}} || true
+        docker rm   ${{env.fcont}} || true
+        
+        docker stop ${{env.bcont}} || true
+        docker rm ${{env.bcont}} || true
+
+        docker stop ${{env.dbname}} || true
+        docker rm ${{env.dbname}} || true
+     
+    - name: "Pull MongoDB & Build Docker Images"
+      run: |
+        docker pull mongo:6
+
+        docker build -t ${{env.fimg}} mern/frontend
+        docker build -t ${{env.bimg}} mern/backend
+             
+    - name: "Run Docker Images"
+      run: |
+        docker run -d \
+        --network=${{env.mern_net}} \
+        --name=${{env.fcont}} \
+        -p ${{env.fport}}:${{env.fport}}  \
+        --restart=always \
+        ${{env.fimg}}
+
+        docker run -d \
+        --network=${{env.mern_net}} \
+        --name=${{env.dbname}} \
+        -p ${{env.dbport}}:${{env.dbport}} \
+        --restart=always \
+        mongo:6 
+        sleep 5
+
+        docker run -d \
+        --network=${{env.mern_net}} \
+        --name=${{env.bcont}} \
+        -p ${{env.bport}}:${{env.bport}} \
+        --restart=always \
+        ${{env.bimg}}
+
+                      
+  
+

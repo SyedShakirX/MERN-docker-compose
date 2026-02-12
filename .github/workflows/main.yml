@@ -32,16 +32,6 @@ jobs:
 
     - name: Checkout repo
       uses: actions/checkout@v4
-
-    - name: "Ensure Docker Network Exists"
-      run: |
-        if sudo docker network ls --format '{{.Name}}' | grep -wq "${{ env.mern_net }}"; then
-          echo "Network ${{ env.mern_net }} already exists. Removing..."
-          sudo docker network rm ${{ env.mern_net }}
-        fi
-        echo "Creating Docker network ${{ env.mern_net }}..."
-        sudo docker network create ${{ env.mern_net }}
-
       
     - name: "Remove Already Running Containers"
       run: |
@@ -60,6 +50,15 @@ jobs:
 
         sudo docker build -t ${{env.fimg}} mern/frontend
         sudo docker build -t ${{env.bimg}} mern/backend
+
+    - name: "Ensure Docker Network Exists"
+      run: |
+        if sudo docker network ls --format '{{.Name}}' | grep -wq "${{ env.mern_net }}"; then
+          echo "Network ${{ env.mern_net }} already exists. Removing..."
+          sudo docker network rm ${{ env.mern_net }}
+        fi
+        echo "Creating Docker network ${{ env.mern_net }}..."
+        sudo docker network create ${{ env.mern_net }}
              
     - name: "Run Docker Images"
       run: |
